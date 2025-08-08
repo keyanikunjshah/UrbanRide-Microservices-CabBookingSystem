@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hello Riders - Sign Up</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 85vh;
+            margin-top: 3rem;
+        }
+
+
+        .container {
+
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            background-color: #1a1a1a;
+            border-radius: 10px;
+            padding: 3rem;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            height: 85vh;
+        }
+
+        .form-box {
+            flex: 1;
+            padding: 3rem;
+        }
+
+        .form-box h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: #ff0000;
+        }
+
+        form input {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border: none;
+            outline: none;
+            background-color: #333;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        input[readonly] {
+            background-color: #333;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        form button {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: #ff0000;
+            border: none;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        form button:hover {
+            background-color: #8b0000;
+        }
+
+        .image-box {
+            flex: 1;
+            background-color: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .image-box img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+        }
+
+        .error {
+            color: #ff4d4d;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="form-box">
+            <h2>
+                <span style="color: white;">Welcome Future</span>
+                <span style="color: red;">Riders</span>
+            </h2>
+
+            <form id="signupForm" onsubmit="return validateForm()">
+                <input type="text" id="name" placeholder="Full Name" />
+                <div id="nameError" class="error"></div>
+
+                <input type="email" id="email" placeholder="Email" />
+                <div id="emailError" class="error"></div>
+
+                <input type="password" id="password" placeholder="Password" />
+                <div id="passwordError" class="error"></div>
+
+                <input type="tel" id="phone" placeholder="Phone Number" />
+                <div id="phoneError" class="error"></div>
+
+                <input type="text" value="CUSTOMER" readonly />
+
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
+        <div class="image-box">
+            <img src="images/phoneImage.png" alt="Phone Image" />
+        </div>
+    </div>
+
+    <script>
+        function validateForm() {
+            let name = document.getElementById("name").value.trim();
+            let email = document.getElementById("email").value.trim();
+            let password = document.getElementById("password").value.trim();
+            let phone = document.getElementById("phone").value.trim();
+
+            let nameError = document.getElementById("nameError");
+            let emailError = document.getElementById("emailError");
+            let passwordError = document.getElementById("passwordError");
+            let phoneError = document.getElementById("phoneError");
+
+            nameError.textContent = "";
+            emailError.textContent = "";
+            passwordError.textContent = "";
+            phoneError.textContent = "";
+
+            let isValid = true;
+
+            if (name === "") {
+                nameError.textContent = "Name is required.";
+                isValid = false;
+            }
+
+            if (email === "" || !email.includes("@")) {
+                emailError.textContent = "Enter a valid email.";
+                isValid = false;
+            }
+
+            if (password.length < 6) {
+                passwordError.textContent = "Password must be at least 6 characters.";
+                isValid = false;
+            }
+
+            if (!/^\d{10}$/.test(phone)) {
+                phoneError.textContent = "Phone number must be 10 digits.";
+                isValid = false;
+            }
+
+            return isValid;
+
+
+        }
+
+        document.getElementById("signupForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            if (!validateForm()) return;
+
+            const userData = {
+                name: document.getElementById("name").value.trim(),
+                email: document.getElementById("email").value.trim(),
+                password: document.getElementById("password").value.trim(),
+                phoneNumeber: document.getElementById("phone").value.trim(),
+                role: "CUSTOMER",
+            };
+
+            try {
+                const response = await fetch("http://localhost:8765/USER-SERVICE/users/register", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                if (response.ok) {
+                    alert("Registration successful!");
+                    window.location.href = "login.html";
+                } else {
+                    const errorText = await response.text();
+                    alert("Registration failed: " + errorText);
+                }
+            } catch (error) {
+                alert("Error: " + error.message);
+            }
+        });
+
+
+    </script>
+</body>
+
+</html>

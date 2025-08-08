@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UrbanRide - Book Cabs Fast & Affordable</title>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            line-height: 1.6;
+        }
+
+        nav {
+            background-color: #1a1a1a;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .logo span {
+            color: #ff0000;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+        }
+
+        .nav-links a:hover {
+            color: #ff0000;
+        }
+
+        .driver-btn {
+            padding: 0.5rem 1rem;
+            background-color: #1e90ff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .driver-btn:hover {
+            background-color: #4682b4;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #1a1a1a;
+            min-width: 120px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: #fff;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #333;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .world-icon {
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 4rem;
+            margin-top: 60px;
+            margin-bottom: 0;
+        }
+
+        .hero-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .text-content {
+            flex: 1;
+            text-align: left;
+            padding-right: 2rem;
+        }
+
+        .text-content h1 {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .text-content h1 span {
+            color: #ff0000;
+        }
+
+        .text-content p {
+            font-size: 1.2rem;
+            margin-bottom: 2.5rem;
+            color: #ccc;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            border: none;
+            background-color: #ffffff;
+            color: #000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+        }
+
+        .btn:hover {
+            background-color: #8b0000;
+            color: #fff;
+        }
+
+        .animation-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0rem;
+
+            /* Changed from 1rem to 0.5rem */
+        }
+
+        .small-animation {
+            width: 250px;
+            height: 150px;
+        }
+
+        .main-animation {
+            width: 350px;
+            height: 250px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div class="logo">Urban<span>Ride</span></div>
+        <div class="nav-links">
+            <button class="driver-btn" onclick="location.href='signupAsDriver.html'">Become a Driver</button>
+            <div class="dropdown">
+                <span class="world-icon">🌐</span>
+                <a href="#">Languages</a>
+                <div class="dropdown-content">
+                    <a href="#">English</a>
+                    <a href="#">Hindi</a>
+                </div>
+            </div>
+            <a href="#">Services</a>
+            <a href="#">Book Cabs Now</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <div class="text-content">
+                <h1>Urban<span>Ride</span></h1>
+                <p>Book Cabs Fast & Affordable</p>
+                <div class="buttons">
+                    <button class="btn" onclick="location.href='signup.html'">Sign Up</button>
+                    <button class="btn" onclick="location.href='login.html'">Login</button>
+                </div>
+            </div>
+            <div class="animation-container">
+                <lottie-player src="animations/locationAnim.json" background="transparent" speed="0.8" loop autoplay
+                    class="small-animation"></lottie-player>
+                <lottie-player src="animations/k1hbYqu1MN (1).json" background="transparent" speed="1" loop autoplay
+                    class="main-animation"></lottie-player>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

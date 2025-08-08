@@ -1,0 +1,158 @@
+version: '3.8'
+
+services:
+  # Eureka Server
+  eureka-service:
+    image: cabbookingsystem/eureka-service:0.0.1
+    container_name: eureka-service
+    ports:
+      - "8761:8761"
+    networks:
+      - microservice-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # User MySQL
+  mysql-user:
+    image: mysql:8
+    container_name: mysql-user
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: user_database
+      TZ: UTC
+    volumes:
+      - mysql-user-data:/var/lib/mysql
+    networks:
+      - microservice-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # User Service
+  user-service:
+    image: cabbookingsystem/user-service:0.0.1
+    container_name: user-service
+    depends_on:
+      mysql-user:
+        condition: service_healthy
+      eureka-service:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-user:3306/user_database?allowPublicKeyRetrieval=true&autoReconnect=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 1234
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-service:8761/eureka
+    ports:
+      - "8080:8080"
+    networks:
+      - microservice-net
+    restart: unless-stopped
+
+  # Cab MySQL
+  mysql-cab:
+    image: mysql:8
+    container_name: mysql-cab
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: cabservice
+      TZ: UTC
+    volumes:
+      - mysql-cab-data:/var/lib/mysql
+    networks:
+      - microservice-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Cab Service
+  cab-service:
+    image: cabbookingsystem/cab-service:0.0.1
+    container_name: cab-service
+    depends_on:
+      mysql-cab:
+        condition: service_healthy
+      eureka-service:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-cab:3306/cabservice?allowPublicKeyRetrieval=true&autoReconnect=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 1234
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-service:8761/eureka
+    ports:
+      - "8081:8081"
+    networks:
+      - microservice-net
+    restart: unless-stopped
+
+  # Booking MySQL
+  mysql-booking:
+    image: mysql:8
+    container_name: mysql-booking
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: bookingservicedb
+      TZ: UTC
+    volumes:
+      - mysql-booking-data:/var/lib/mysql
+    networks:
+      - microservice-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Booking Service
+  booking-service:
+    image: cabbookingsystem/booking-service:0.0.1
+    container_name: booking-service
+    depends_on:
+      mysql-booking:
+        condition: service_healthy
+      eureka-service:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-booking:3306/bookingservicedb?allowPublicKeyRetrieval=true&autoReconnect=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 1234
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-service:8761/eureka
+    ports:
+      - "8083:8083"
+    networks:
+      - microservice-net
+    restart: unless-stopped
+
+  # API Gateway
+  api-gateway:
+    image: api-gateway:0.0.1
+    container_name: api-gateway
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-service:8761/eureka
+      SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_ENABLED: true
+    ports:
+      - "8765:8765"
+    networks:
+      - microservice-net
+    restart: unless-stopped
+
+networks:
+  microservice-net:
+
+volumes:
+  mysql-user-data:
+  mysql-cab-data:
+  mysql-booking-data:

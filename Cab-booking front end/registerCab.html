@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Register Cab</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: Arial;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        form {
+            background-color: #1a1a1a;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 15px red;
+            width: 400px;
+        }
+
+        input,
+        button,
+        select {
+            width: 100%;
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            background: #333;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button {
+            background: red;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <form id="cabForm" onsubmit="registerCab(event)">
+        <h2>Register Your Cab</h2>
+        <input type="text" id="model" placeholder="Cab Model" required />
+        <input type="text" id="licensePlate" placeholder="License Plate" required />
+        <select id="status">
+            <option value="AVAILABLE">Available</option>
+            <option value="UNAVAILABLE">Unavailable</option>
+        </select>
+        <button type="submit">Register Cab</button>
+    </form>
+
+    <script>
+        async function registerCab(event) {
+            event.preventDefault();
+
+            const driverId = localStorage.getItem("driverId");
+
+            if (!driverId) {
+                alert("No driver ID found. Please login again.");
+                return;
+            }
+
+            const cabData = {
+                model: document.getElementById("model").value,
+                numberPlate: document.getElementById("licensePlate").value,
+                status: document.getElementById("status").value,
+                driverId: parseInt(driverId)
+            };
+
+            try {
+                const res = await fetch("http://localhost:8765/CAB-SERVICE/cabs/register", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(cabData)
+                });
+
+                if (res.ok) {
+                    alert("Cab registered successfully!");
+                    window.location.href = "index.html";
+                } else {
+                    const errText = await res.text();
+                    alert("Failed to register cab: " + errText);
+                }
+            } catch (error) {
+                alert("Error: " + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

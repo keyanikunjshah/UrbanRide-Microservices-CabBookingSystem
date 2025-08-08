@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>UrbanRide</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .left-panel {
+            flex: 1;
+            padding: 4rem;
+            background-color: #000000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .right-panel {
+            flex: 1;
+            background-image: url('images/ridebooking.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            color: #ffffff;
+        }
+
+        .location-input {
+            border: 1px solid #cccccc;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            width: 100%;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .location-input::placeholder {
+            color: #999999;
+        }
+
+        .book-btn {
+            padding: 1rem;
+            background-color: #ffffff;
+            color: #000000;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        .suggestions {
+            border: 1px solid #ccc;
+            max-height: 150px;
+            overflow-y: auto;
+            position: absolute;
+            background: #1a1a1a;
+            color: #ffffff;
+            width: 92%;
+            z-index: 99;
+        }
+
+        .suggestions div {
+            padding: 0.5rem;
+            cursor: pointer;
+        }
+
+        .suggestions div:hover {
+            background-color: #333333;
+        }
+
+        #fare-display {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+        }
+
+        #cab-details {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border: 1px solid #444;
+            border-radius: 10px;
+            background-color: #1a1a1a;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <h1>Go anywhere with <span style="color: red;">Urban</span><span style="color: white;">Ride</span></h1>
+            <input type="text" id="pickup" placeholder="Detecting pickup..." class="location-input" readonly />
+            <input type="text" id="dropoff" placeholder="Dropoff location" class="location-input" list="drop-options" />
+            <datalist id="drop-options">
+                <option value="Dadar East">
+                <option value="Bandra West">
+                <option value="Andheri West">
+                <option value="Borivali West">
+            </datalist>
+
+            <button class="book-btn" onclick="checkFare()">Check Price</button>
+            <div id="fare-display"></div>
+
+            <button class="book-btn" onclick="confirmBooking()">Confirm Booking</button>
+
+            <div id="cab-details"></div> <!-- 💡 This will display the cab & driver info -->
+        </div>
+        <div class="right-panel"></div>
+    </div>
+
+    <script>
+        const dropLocations = {
+            "Dadar East": { lat: 19.0196, lon: 72.8446 },
+            "Bandra West": { lat: 19.0606, lon: 72.8266 },
+            "Andheri West": { lat: 19.1290, lon: 72.8387 },
+            "Borivali West": { lat: 19.2360, lon: 72.8446 }
+        };
+    
+        let pickupLat = null, pickupLon = null, fare = 0;
+    
+        window.onload = () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    pickupLat = position.coords.latitude;
+                    pickupLon = position.coords.longitude;
+                    document.getElementById("pickup").value = `Lat: ${pickupLat.toFixed(5)}, Lon: ${pickupLon.toFixed(5)}`;
+                }, () => {
+                    alert("Location access denied. Cannot auto-detect pickup location.");
+                });
+            }
+        };
+    
+        function checkFare() {
+            const drop = document.getElementById("dropoff").value;
+            if (!dropLocations[drop] || pickupLat === null || pickupLon === null) {
+                alert("Please select a valid drop location.");
+                return;
+            }
+    
+            const dropCoords = dropLocations[drop];
+            const distance = getDistance(pickupLat, pickupLon, dropCoords.lat, dropCoords.lon);
+            fare = Math.round(distance * 10);
+            document.getElementById("fare-display").textContent = `Estimated Fare: ₹${fare}`;
+        }
+    
+        async function confirmBooking() {
+            const drop = document.getElementById("dropoff").value;
+            const dropCoords = dropLocations[drop];
+            const userId = 1;
+            const cab = await getNearestCab(pickupLat, pickupLon);
+    
+            if (!cab) {
+                alert("No nearby cabs found.");
+                return;
+            }
+    
+            const bookingData = {
+                userId,
+                cabId: cab.id,
+                pickupLatitude: pickupLat,
+                pickupLongitude: pickupLon,
+                dropLatitude: dropCoords.lat,
+                dropLongitude: dropCoords.lon,
+                fare
+            };
+    
+            try {
+                const response = await fetch("http://localhost:8765/BOOKING-SERVICE/bookings/create", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(bookingData)
+                });
+    
+                if (response.ok) {
+                    const driverRes = await fetch(`http://localhost:8765/USER-SERVICE/users/${cab.driverId}`);
+                    const driver = await driverRes.json();
+    
+                    document.getElementById("cab-details").innerHTML = `
+                        <h3>🚖 Ride Details</h3>
+                        <p><strong>Cab</strong> ${cab.id}</p>
+                        <p><strong>Cab Number:</strong> ${cab.numberPlate}</p>
+                        <p><strong>Model:</strong> ${cab.model}</p>
+                        <p><strong>Driver Name:</strong> ${driver.name}</p>
+                        <p><strong>Phone:</strong> ${driver.phoneNumeber}</p>
+                    `;
+                } else {
+                    const err = await response.text();
+                    alert("Booking failed: " + err);
+                }
+            } catch (error) {
+                alert("Error: " + error.message);
+            }
+        }
+    
+        function getDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) ** 2 +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) ** 2;
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+    
+        async function getNearestCab(lat, lon) {
+            try {
+                const res = await fetch(`http://localhost:8765/CAB-SERVICE/cabs/available?latitude=${lat}&longitude=${lon}`);
+                const cabs = await res.json();
+    
+                let nearestCab = null;
+                let shortestDistance = Infinity;
+    
+                for (const cab of cabs) {
+                    const driverRes = await fetch(`http://localhost:8765/USER-SERVICE/users/driver/${cab.driverId}/location`);
+                    const driverLocation = await driverRes.json();
+    
+                    if (driverLocation && driverLocation.latitude && driverLocation.longitude) {
+                        const distance = getDistance(lat, lon, driverLocation.latitude, driverLocation.longitude);
+    
+                        if (distance < shortestDistance) {
+                            shortestDistance = distance;
+                            nearestCab = cab;
+                        }
+                    }
+                }
+    
+                return nearestCab;
+    
+            } catch (error) {
+                console.error("Failed to fetch cab or driver location:", error);
+                return null;
+            }
+        }
+    </script>
+    
+
+</body>
+
+</html>
